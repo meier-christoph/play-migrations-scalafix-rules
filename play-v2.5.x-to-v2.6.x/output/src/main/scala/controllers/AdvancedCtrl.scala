@@ -8,6 +8,10 @@ import services.{AnOtherServiceToInject, AndYetAnOtherServiceToInject, SomeServi
 import scala.concurrent.{ExecutionContext, Future}
 import play.api.mvc.{ BaseController, ControllerComponents }
 
+/**
+  * Doc must stay, though we are not adding new params.
+  * @param srv existing param.
+  */
 class AdvancedCtrl @Inject() (srv: SomeServiceWeInjectIntoOurControllers, other: AnOtherServiceToInject, val controllerComponents: ControllerComponents)(implicit ec: ExecutionContext, extra: AndYetAnOtherServiceToInject) extends BaseController with SomeTraitWeNeedToKeep with SomeTypedTraitWeNeedToKeep[JsValue] {
 
   def index: Action[AnyContent] = Action {

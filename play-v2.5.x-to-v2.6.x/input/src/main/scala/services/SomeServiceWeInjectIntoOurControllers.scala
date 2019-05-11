@@ -3,6 +3,6 @@
 // format: off
 package services
 
-class SomeServiceWeInjectIntoOurControllers {
+trait SomeServiceWeInjectIntoOurControllers {
   def foo: String = "foo"
 }

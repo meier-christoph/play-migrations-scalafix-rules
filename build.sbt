@@ -35,7 +35,8 @@ lazy val input25 = project
   .settings(skip in publish := true)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play" % play25
+      "com.typesafe.play" %% "play" % play25,
+      "com.typesafe.play" %% "play-ws" % play25
     )
   )
 
@@ -44,7 +45,8 @@ lazy val output26 = project
   .settings(skip in publish := true)
   .settings(
     libraryDependencies ++= Seq(
-      "com.typesafe.play" %% "play" % play26
+      "com.typesafe.play" %% "play" % play26,
+      "com.typesafe.play" %% "play-ws" % play26
     )
   )
 

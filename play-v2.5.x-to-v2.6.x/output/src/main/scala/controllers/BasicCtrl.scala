@@ -7,7 +7,8 @@ import play.api.mvc.{Action, AnyContent}
 import services.SomeServiceWeInjectIntoOurControllers
 import play.api.mvc.{ BaseController, ControllerComponents }
 
-class BasicCtrl @Inject() (srv: SomeServiceWeInjectIntoOurControllers, val controllerComponents: ControllerComponents) extends BaseController with SomeTraitWeNeedToKeep {
+// this one is a case class i.e. don't use val for the components
+case class BasicCtrl @Inject() (srv: SomeServiceWeInjectIntoOurControllers, controllerComponents: ControllerComponents) extends BaseController with SomeTraitWeNeedToKeep {
 
   def index: Action[AnyContent] = Action {
     Ok(srv.foo)

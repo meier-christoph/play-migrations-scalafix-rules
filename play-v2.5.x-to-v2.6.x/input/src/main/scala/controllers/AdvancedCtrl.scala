@@ -11,6 +11,10 @@ import services.{AnOtherServiceToInject, AndYetAnOtherServiceToInject, SomeServi
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+  * Doc must stay, though we are not adding new params.
+  * @param srv existing param.
+  */
 class AdvancedCtrl @Inject()(srv: SomeServiceWeInjectIntoOurControllers, other: AnOtherServiceToInject)(implicit ec: ExecutionContext, extra: AndYetAnOtherServiceToInject) extends SomeTraitWeNeedToKeep with Controller with SomeTypedTraitWeNeedToKeep[JsValue] {
 
   def index: Action[AnyContent] = Action {

@@ -11,8 +11,8 @@ class RuleSuite extends SemanticRuleSuite() {
   def byPath(t: RuleTest, p: String): Boolean = t.path.testPath.toNIO == Paths.get(p)
 
   testsToRun
-//    .filter(contains(_, "address"))
-//    .filter(endsWith(_, "AdvancedCtrl"))
+//    .filter(contains(_, "example"))
+//    .filter(endsWith(_, "AnOtherServiceToInject"))
     .foreach(runOn)
 
   override def compareContents(original: String, revised: String): String = {
