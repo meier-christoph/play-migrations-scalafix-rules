@@ -1,5 +1,22 @@
 ## Migration Rules
 
+### MigrateControllers
+
+Migrate Play Controllers away from global state and to more D.I. using `ControllerComponents`.
+
+This rule should handle most common use cases (see examples in input) i.e. when Play's `Controller`
+trait is present. However, if you did create a custom base class which extends `Controller`
+and you only use that class in your application, then you need to configure said base class
+in the settings.
+
+```.scalafix.conf
+MigrateControllers.controllerClasses = [
+  MyBaseController
+]
+```
+
+
+
 ### Controller Changes
 
 Using DI and ControllerComponents instead of Controller

@@ -12,6 +12,20 @@ object Classes {
       name = Type.Name(name)
     )
 
+    def mapMods(fn: List[Mod] => List[Mod]): Defn.Class = c.copy(
+      mods = fn(c.mods)
+    )
+
+    def ensureMod(m: Mod): Defn.Class =
+      if (!hasMod(m)) addMod(m) else c
+    def hasMod(m: Mod): Boolean =
+      c.mods.exists {
+        case o if m.syntax == o.syntax => true
+        case _                         => false
+      }
+    def addMod(m: Mod): Defn.Class =
+      mapMods(_ :+ m)
+
     def mapParam(fn: List[List[Term.Param]] => List[List[Term.Param]]): Defn.Class = c.copy(
       ctor = c.ctor.copy(
         paramss = fn(c.ctor.paramss)
@@ -19,18 +33,16 @@ object Classes {
     )
 
     def ensureParam(p: Term.Param): Defn.Class =
-      if (!hasParam(p)) {
-        addParam(p)
-      } else {
-        c
-      }
+      if (!hasParam(p)) addParam(p) else c
 
-    def hasParam(p: Term.Param): Boolean = {
+    def ensureNotParam(p: Term.Param): Defn.Class =
+      if (hasParam(p)) removeParam(p) else c
+
+    def hasParam(p: Term.Param): Boolean =
       c.ctor.paramss.exists(_.exists {
         case Term.Param(_, name, _, _) if name == p.name => true
         case _                                           => false
       })
-    }
 
     def addParam(p: Term.Param): Defn.Class = {
       val isImplicit = Mods.isImplicit(p.mods)
@@ -62,11 +74,47 @@ object Classes {
       }
     }
 
+    def removeParam(p: Term.Param): Defn.Class =
+      removeParamByName(name = Some(p.name.syntax), className = p.decltpe.map(_.syntax))
+
+    def removeParamByName(name: Option[String] = None, className: Option[String] = None): Defn.Class = {
+      mapParam {
+        case Nil => Nil
+        case l =>
+          l.map { lp =>
+            val idx = lp.indexWhere {
+              case Term.Param(_, n, _, _) if name.contains(n.syntax) =>
+                true
+              case Term.Param(_, _, tpe, _) if className.isDefined && tpe.map(_.syntax) == className =>
+                true
+              case _ =>
+                false
+            }
+            if (idx >= 0) lp.drop(idx) else lp
+          }
+      }
+    }
+
     def mapInit(fn: List[Init] => List[Init]): Defn.Class = c.copy(
       templ = c.templ.copy(
         inits = fn(c.templ.inits)
       )
     )
+
+    def ensureType(i: Init): Defn.Class =
+      if (!hasType(i)) addType(i) else c
+
+    def ensureNotType(i: Init): Defn.Class =
+      if (hasType(i)) removeType(i) else c
+
+    def hasType(i: Init): Boolean =
+      c.templ.inits.exists {
+        case Init(tpe, _, _) if tpe == i.tpe => true
+        case _                               => false
+      }
+
+    def addType(i: Init): Defn.Class = mapInit(_ :+ i)
+    def removeType(i: Init): Defn.Class = mapInit(_.filterNot(_.tpe == i.tpe))
 
     def mapBody(fn: List[Stat] => List[Stat]): Defn.Class = c.copy(
       templ = c.templ.copy(
