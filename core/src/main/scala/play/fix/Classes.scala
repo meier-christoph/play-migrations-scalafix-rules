@@ -40,8 +40,10 @@ object Classes {
 
     def hasParam(p: Term.Param): Boolean =
       c.ctor.paramss.exists(_.exists {
-        case Term.Param(_, name, _, _) if name == p.name => true
-        case _                                           => false
+        case Term.Param(_, name, _, _) if name.syntax == p.name.syntax =>
+          true
+        case _ =>
+          false
       })
 
     def addParam(p: Term.Param): Defn.Class = {
@@ -82,15 +84,14 @@ object Classes {
         case Nil => Nil
         case l =>
           l.map { lp =>
-            val idx = lp.indexWhere {
+            lp.flatMap {
               case Term.Param(_, n, _, _) if name.contains(n.syntax) =>
-                true
-              case Term.Param(_, _, tpe, _) if className.isDefined && tpe.map(_.syntax) == className =>
-                true
-              case _ =>
-                false
+                None
+              case Term.Param(_, _, Some(tpe), _) if className.contains(tpe.syntax) =>
+                None
+              case tpe =>
+                Some(tpe)
             }
-            if (idx >= 0) lp.drop(idx) else lp
           }
       }
     }

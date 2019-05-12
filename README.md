@@ -14,7 +14,7 @@ addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.4")
 ```scala
 // build.sbt
 scalafixDependencies in ThisBuild +=
-  "org.example" %% "play-migrations-v25-to-v26-scalafix-rules" % "0.1.0-SNAPSHOT"
+  "com.typesafe.play.contrib" %% "play-migrations-v25-to-v26-scalafix-rules" % "0.1.0-SNAPSHOT"
 ```
 
 ```sh

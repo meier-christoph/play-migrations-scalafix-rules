@@ -12,7 +12,7 @@ class RuleSuite extends SemanticRuleSuite() {
 
   testsToRun
 //    .filter(contains(_, "example"))
-//    .filter(endsWith(_, "MyBaseClassWithInheritance"))
+//    .filter(endsWith(_, "I18nSupportCtrl_01"))
     .foreach(runOn)
 
   override def compareContents(original: String, revised: String): String = {

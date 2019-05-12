@@ -1,7 +1,7 @@
 lazy val V = _root_.scalafix.sbt.BuildInfo
 inThisBuild(
   List(
-    organization := "com.example",
+    organization := "com.typesafe.play.contrib",
     scalaVersion := V.scala211,
     addCompilerPlugin(scalafixSemanticdb),
     scalacOptions ++= List("-Yrangepos"),
