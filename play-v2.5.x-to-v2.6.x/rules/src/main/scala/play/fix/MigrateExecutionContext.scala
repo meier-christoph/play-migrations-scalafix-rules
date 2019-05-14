@@ -19,6 +19,13 @@ class MigrateExecutionContext extends SemanticRule("MigrateExecutionContext") {
               Patch.removeImportee(i)
           }.asPatch
 
+        case Importer(q"scala.concurrent.ExecutionContext.Implicits", importedTypes) =>
+          importedTypes.collect {
+            case i @ importee"global" =>
+              hasExecutionImport = true
+              Patch.removeImportee(i)
+          }.asPatch
+
         case clazz: Defn.Class if hasExecutionImport =>
           val ec = Term.Param(List(Mod.Implicit()), Name("executionContext"), Some(Type.Name("ExecutionContext")), None)
           val edited = clazz.ensureParam(ec)

@@ -22,4 +22,8 @@ object Mods {
       case _              => false
     }
 
+  def contains(l: List[Mod], m: Mod): Boolean = l.exists {
+    case o if m.syntax == o.syntax => true
+    case _                         => false
+  }
 }

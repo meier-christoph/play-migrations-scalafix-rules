@@ -19,16 +19,23 @@ object Classes {
     def ensureMod(m: Mod): Defn.Class =
       if (!hasMod(m)) addMod(m) else c
     def hasMod(m: Mod): Boolean =
-      c.mods.exists {
-        case o if m.syntax == o.syntax => true
-        case _                         => false
-      }
+      Mods.contains(c.mods, m)
     def addMod(m: Mod): Defn.Class =
       mapMods(_ :+ m)
 
     def mapParam(fn: List[List[Term.Param]] => List[List[Term.Param]]): Defn.Class = c.copy(
       ctor = c.ctor.copy(
         paramss = fn(c.ctor.paramss)
+      )
+    )
+
+    def ensureAnnot(a: Mod.Annot): Defn.Class = c.copy(
+      ctor = c.ctor.copy(
+        mods = if (Mods.contains(c.ctor.mods, a)) {
+          c.ctor.mods
+        } else {
+          c.ctor.mods :+ a
+        }
       )
     )
 

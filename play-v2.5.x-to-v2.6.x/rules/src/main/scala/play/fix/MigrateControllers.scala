@@ -21,6 +21,7 @@ class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule(
     //
 
     val ControllerFinder = new TypeFinder("Controller")
+    val injectAnnot = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(List())))
     val baseCtrl = Init(Type.Name("BaseController"), Name.Anonymous(), Nil)
     def replaceController(i: List[Init]): List[Init] = {
       baseCtrl +: i.filterNot(_.tpe.syntax == "Controller")
@@ -41,16 +42,11 @@ class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule(
           Patch.addRight(b.tokens.head, " implicit _request =>")
       }
 
-    var hasControllerImport = false
+    val imports = Imports(doc.tree)
+    val hasControllerImport = imports.hasImport(importer"play.api.mvc.Controller")
+    imports.ensureNotImport(importer"play.api.mvc.Controller")
     doc.tree
       .collect {
-        case Importer(q"play.api.mvc", importedTypes) =>
-          importedTypes.collect {
-            case i @ importee"Controller" =>
-              hasControllerImport = true
-              Patch.removeImportee(i)
-          }.asPatch
-
         case t @ Defn.Class(_, n, _, _, Template(_, inits, _, _))
             if hasControllerImport &&
               inits.map(_.tpe.syntax).contains("Controller") &&
@@ -61,32 +57,46 @@ class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule(
           val fixed = t
             .mapInit(replaceController)
             .ensureParam(ctrlComp)
+            .ensureAnnot(injectAnnot)
             .ensureNotParam(messagesApi)
-          ExtraPatch.replaceClassDef(t, fixed) +
-            Patch.addGlobalImport(importer"play.api.mvc.BaseController") +
-            Patch.addGlobalImport(importer"play.api.mvc.ControllerComponents")
+          imports
+            .ensureImport(importer"javax.inject.Inject")
+            .ensureImport(importer"play.api.mvc.BaseController")
+            .ensureImport(importer"play.api.mvc.BaseController")
+            .ensureImport(importer"play.api.mvc.ControllerComponents")
+          ExtraPatch.replaceClassDef(t, fixed)
 
         case t @ Defn.Class(_, _, _, _, Template(_, inits, _, _))
             if hasControllerImport &&
               inits.map(_.tpe.syntax).contains("Controller") =>
-          val fixed = t.mapInit(replaceController).ensureMod(Mod.Abstract())
-          ExtraPatch.replaceClassDef(t, fixed) +
-            Patch.addGlobalImport(importer"play.api.mvc.BaseController")
+          val fixed = t
+            .mapInit(replaceController)
+            .ensureMod(Mod.Abstract())
+          imports
+            .ensureImport(importer"play.api.mvc.BaseController")
+          ExtraPatch.replaceClassDef(t, fixed)
 
         case t @ Defn.Class(_, _, _, _, Template(_, inits, _, _)) if inits.map(_.tpe.syntax).exists(tpe => config.controllerClasses.contains(tpe)) =>
           val valMod = if (t.isCase) Nil else List(Mod.ValParam())
           val ctrlComp = Term.Param(valMod, Name("controllerComponents"), Some(Type.Name("ControllerComponents")), None)
           val messagesApi = Term.Param(valMod, Name("messagesApi"), Some(Type.Name("MessagesApi")), None)
-          val fixed = t.ensureParam(ctrlComp).ensureNotParam(messagesApi)
-          ExtraPatch.replaceClassDef(t, fixed) +
-            Patch.addGlobalImport(importer"play.api.mvc.ControllerComponents")
+          val fixed = t
+            .ensureParam(ctrlComp)
+            .ensureAnnot(injectAnnot)
+            .ensureNotParam(messagesApi)
+          imports
+            .ensureImport(importer"javax.inject.Inject")
+            .ensureImport(importer"play.api.mvc.ControllerComponents")
+          ExtraPatch.replaceClassDef(t, fixed)
 
         case t @ Defn.Trait(_, _, _, _, Template(_, inits, _, _))
             if hasControllerImport &&
               inits.map(_.tpe.syntax).contains("Controller") =>
-          val fixed = t.mapInit(replaceController)
-          ExtraPatch.replaceTraitDef(t, fixed) +
-            Patch.addGlobalImport(importer"play.api.mvc.BaseController")
+          val fixed = t
+            .mapInit(replaceController)
+          imports
+            .ensureImport(importer"play.api.mvc.BaseController")
+          ExtraPatch.replaceTraitDef(t, fixed)
 
         case Defn.Trait(_, _, _, _, Template(_, _, self, _))
             if hasControllerImport &&
@@ -100,8 +110,9 @@ class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule(
             case other                   => other
           }
           val fixed = self.copy(decltpe = self.decltpe.map(replaceCtrl))
-          Patch.replaceTree(self, fixed.syntax) +
-            Patch.addGlobalImport(importer"play.api.mvc.BaseController")
+          imports
+            .ensureImport(importer"play.api.mvc.BaseController")
+          Patch.replaceTree(self, fixed.syntax)
 
         case Term.Apply(Term.Apply(Term.Select(Term.Name("Action"), _), _), List(b: Term.Block)) =>
           patchActionWithImplicitRequestArg(b)
@@ -113,6 +124,7 @@ class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule(
           patchActionWithImplicitRequestArg(b)
       }
       .asPatch
-      .atomic
+      .atomic +
+      imports.asPatch
   }
 }

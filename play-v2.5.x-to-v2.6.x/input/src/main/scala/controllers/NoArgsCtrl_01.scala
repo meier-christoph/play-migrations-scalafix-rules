@@ -4,11 +4,10 @@ rule = MigrateControllers
 // format: off
 package controllers
 
-import javax.inject.Inject
 import play.api.mvc.{Action, AnyContent, Controller}
 
-/** Simplest and most basic controller. */
-class StandardInjectCtrl_01 @Inject() extends Controller {
+/** Must either use @Inject or a no args class. */
+class NoArgsCtrl_01 extends Controller {
 
   // keep comments
 

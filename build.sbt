@@ -3,6 +3,7 @@ inThisBuild(
   List(
     organization := "com.typesafe.play.contrib",
     scalaVersion := V.scala211,
+    crossScalaVersions := Seq(V.scala211, V.scala212),
     addCompilerPlugin(scalafixSemanticdb),
     scalacOptions ++= List("-Yrangepos"),
     updateOptions := updateOptions.value.withLatestSnapshots(false)
