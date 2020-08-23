@@ -1,34 +1,55 @@
 ## Migration Rules
 
+This module contains scalafix rules for migrating play v2.5.x to play v2.6.x
+
+While these rules won't cover the entire migration process, they should help in the process.
+Some rules are complex (e.g. MigrateControllers) and will likely not cover all use cases or 
+generate code that may not compile. If that's the case you will need to finish the migration
+manually.
+
+See the official migration guide for more info :
+https://www.playframework.com/documentation/2.8.x/Migration26
+
 ### MigrateControllers
 
-Migrate Play Controllers away from global state and to more D.I. using `ControllerComponents`.
+Using DI and ControllerComponents instead of Controller.
 
-This rule should handle most common use cases (see examples in input) i.e. when Play's `Controller`
-trait is present. However, if you did create a custom base class which extends `Controller`
-and you only use that class in your application, then you need to configure said base class
-in the settings.
+Note: we opted for the `BaseController` style, `AbstractController` is not supported.
 
-```.scalafix.conf
-MigrateControllers.controllerClasses = [
-  MyBaseController
-]
-```
+[Guide](https://www.playframework.com/documentation/2.8.x/Migration26#Scala-Controller-changes)
 
+### MigrateActions
 
+Ensure all Action have an implicit request.
 
-### Controller Changes
+Note: we don't add `I18nSupport` to the controller, we only prepare the `Action` blocks.
 
-Using DI and ControllerComponents instead of Controller
+[Guide](https://www.playframework.com/documentation/2.8.x/MessagesMigration26#I18nSupport-Implicit-Conversion)
 
-### ExecutionContext
+### MigrateExecutionContext
 
-Using DI for ExecutionContext
+Using DI for ExecutionContext.
 
-### I18n Messages
+[Guide](https://www.playframework.com/documentation/2.8.x/Migration26#play.api.libs.concurrent.Execution-is-deprecated)
 
-Ensure all Action have an implicit request
+### MigrateCacheApi
 
-### Use new Cache API
+The `CacheApi` has been replaced with `SyncCacheApi`.
 
-Play v2.6.x introduces a new API for caching
+Note: sometimes using the `AsyncCacheApi` has additional benefits but this would 
+      require some refactoring which is out of scope for this rule.
+
+[Guide](https://www.playframework.com/documentation/2.8.x/CacheMigration26)
+
+### MigrateConfiguration
+
+Changes `Configuration` getter for optional values.
+
+Note: default values should be defined in `reference.conf` files but this is 
+      out of scope for this rule.
+
+Warning: your code may compile after using this rule, but your app will still fail 
+         at runtime because of a missing conf, please be careful and make sure
+         you are doing proper testing post migration.
+
+[Guide](https://www.playframework.com/documentation/2.8.x/Migration26#Scala-Configuration-API)

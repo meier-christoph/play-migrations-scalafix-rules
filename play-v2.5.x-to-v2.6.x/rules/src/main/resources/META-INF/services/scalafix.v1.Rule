@@ -1,3 +1,5 @@
 play.fix.MigrateControllers
 play.fix.MigrateActions
 play.fix.MigrateExecutionContext
+play.fix.MigrateCacheApi
+play.fix.MigrateConfiguration
