@@ -37,6 +37,7 @@ lazy val input25 = project
   .settings(
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play25,
+      "com.typesafe.play" %% "play-cache" % play25,
       "com.typesafe.play" %% "play-ws" % play25
     )
   )
@@ -47,6 +48,7 @@ lazy val output25 = project
   .settings(
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play26,
+      "com.typesafe.play" %% "play-cache" % play26,
       "com.typesafe.play" %% "play-ws" % play26
     )
   )
