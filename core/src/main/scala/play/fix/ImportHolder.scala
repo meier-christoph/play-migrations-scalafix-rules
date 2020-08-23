@@ -1,11 +1,10 @@
 package play.fix
 
 import scalafix.patch.Patch
-import scalafix.v1.SemanticContext
 
 import scala.meta._
 
-class Imports {
+final class ImportHolder {
   private var patch: Patch = Patch.empty
   private var buffer: Map[String, Importer] = Map.empty
 
@@ -32,7 +31,7 @@ class Imports {
     }
   }
 
-  def ensureImport(i: Importer)(implicit c: SemanticContext): Imports = {
+  def ensure(i: Importer): ImportHolder = {
     if (!hasImport(i)) {
       register(i)
       patch = patch + Patch.addGlobalImport(i)
@@ -40,15 +39,16 @@ class Imports {
     this
   }
 
-  def ensureNotImport(i: Importer): Imports = {
+  def ensureNot(i: Importer): ImportHolder = {
     if (hasImport(i)) {
       val p = i.ref.syntax
       buffer.get(p).foreach { b =>
         val c = i.importees.head.syntax
         b.importees
           .find {
-            case Importee.Name(n) if n.syntax == c => true
-            case _                                 => false
+            case Importee.Name(n) if n.syntax == c        => true
+            case n @ Importee.Wildcard() if n.syntax == c => true
+            case _                                        => false
           }
           .foreach { imp =>
             patch = patch + Patch.removeImportee(imp)
@@ -59,11 +59,12 @@ class Imports {
     this
   }
 
-  def asPatch: Patch = patch
+  def asPatch: Patch =
+    patch
 }
-object Imports {
-  def apply(tree: Tree): Imports = {
-    val buff = new Imports()
+object ImportHolder {
+  def apply(tree: Tree): ImportHolder = {
+    val buff = new ImportHolder()
     tree.traverse {
       case i: Importer => buff.register(i)
     }

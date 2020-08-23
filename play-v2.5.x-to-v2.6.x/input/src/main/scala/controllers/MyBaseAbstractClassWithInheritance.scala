@@ -1,8 +1,5 @@
 /*
 rule = MigrateControllers
-MigrateControllers.controllerClasses = [
-  MyBaseAbstractClassWithInheritance
-]
  */
 // format: off
 package controllers

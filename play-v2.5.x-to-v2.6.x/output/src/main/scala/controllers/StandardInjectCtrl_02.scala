@@ -11,7 +11,7 @@ class StandardInjectCtrl_02 @Inject() (d1: Dummy1, dummy2: Dummy2, val controlle
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action { implicit _request =>
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

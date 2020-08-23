@@ -2,16 +2,17 @@ package fix
 
 import java.nio.file.Paths
 
-import scalafix.testkit.{DiffAssertions, RuleTest, SemanticRuleSuite}
+import org.scalatest.FunSuiteLike
+import scalafix.testkit.{AbstractSemanticRuleSuite, DiffAssertions, RuleTest}
 
-class RuleSuite extends SemanticRuleSuite() {
+class RuleSuite extends AbstractSemanticRuleSuite() with FunSuiteLike {
   def startsWith(t: RuleTest, p: String): Boolean = t.path.testPath.syntax.startsWith(p)
   def contains(t: RuleTest, p: String): Boolean = t.path.testPath.syntax.contains(p)
   def endsWith(t: RuleTest, p: String): Boolean = t.path.testPath.syntax.endsWith(s"$p.scala")
   def byPath(t: RuleTest, p: String): Boolean = t.path.testPath.toNIO == Paths.get(p)
 
   testsToRun
-//    .filter(contains(_, "example"))
+//    .filter(contains(_, "MyBaseAbstractClassWithInheritance"))
 //    .filter(endsWith(_, "I18nSupportCtrl_01"))
     .foreach(runOn)
 
@@ -20,13 +21,12 @@ class RuleSuite extends SemanticRuleSuite() {
 //    println("expected: \n" + revised)
     RuleSuite.compareContents(original, revised)
   }
-
 }
 object RuleSuite {
   def compareContents(original: String, revised: String): String = {
     def splitLines(s: String): Array[String] =
       s.trim
-        .replaceAllLiterally("\r\n|\r|\n", "\n")
+        .replace("\r", "")
         .split("\n")
         .map(_.trim)
         .filter(_.nonEmpty)

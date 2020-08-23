@@ -1,8 +1,5 @@
 /*
 rule = MigrateControllers
-MigrateControllers.controllerClasses = [
-  MyBaseAbstractClassWithInheritance
-]
  */
 // format: off
 package controllers
@@ -16,7 +13,7 @@ class CustomBaseCtrl_02 @Inject()(d: Dummy) extends MyBaseAbstractClassWithInher
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action {
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

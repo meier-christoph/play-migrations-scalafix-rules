@@ -1,6 +1,6 @@
 /*
 rule = MigrateControllers
-MigrateControllers.controllerClasses = [
+MigrateControllers.abstractControllers = [
   MyBaseClassWithInheritance
 ]
  */

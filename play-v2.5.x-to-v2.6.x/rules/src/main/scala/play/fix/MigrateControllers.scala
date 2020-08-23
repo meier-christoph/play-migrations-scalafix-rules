@@ -2,12 +2,13 @@ package play.fix
 
 import metaconfig.Configured
 import play.fix.Classes._
+import play.fix.Symbols._
 import play.fix.Traits._
 import scalafix.v1._
 
 import scala.meta._
 
-class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule("MigrateControllers") {
+final class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule("MigrateControllers") {
   def this() = this(MigrateControllersConfig.default)
 
   override def withConfiguration(config: Configuration): Configured[Rule] = {
@@ -17,111 +18,101 @@ class MigrateControllers(config: MigrateControllersConfig) extends SemanticRule(
   }
 
   override def fix(implicit doc: SemanticDocument): Patch = {
-//    println("Tree.structure: " + doc.tree.structure)
-    //
+    object Controller {
+      val f = new TypeFinder("Controller")
+      def unapply(t: Type): Boolean = f.unapply(t)
 
-    val ControllerFinder = new TypeFinder("Controller")
-    val injectAnnot = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(List())))
-    val baseCtrl = Init(Type.Name("BaseController"), Name.Anonymous(), Nil)
-    def replaceController(i: List[Init]): List[Init] = {
-      baseCtrl +: i.filterNot(_.tpe.syntax == "Controller")
-    }
-
-    def patchActionWithImplicitRequestArg(b: Term.Block): Patch =
-      b.stats.headOption match {
-        case Some(fn: Term.Function) =>
-          fn match {
-            case Term.Function(List(Term.Param(Nil, n @ Term.Name(_), _, _)), _) =>
-              Patch.addLeft(n, "implicit ")
-            case Term.Function(List(Term.Param(Nil, n @ Name.Anonymous(), _, _)), _) =>
-              Patch.addLeft(n, "implicit _request")
-            case _ =>
-              Patch.empty
-          }
-        case _ =>
-          Patch.addRight(b.tokens.head, " implicit _request =>")
+      def unapply(t: Term): Boolean = {
+        val symbols = t.getParents
+        symbols.map(_.value).contains("play/api/mvc/Controller#")
       }
 
-    val imports = Imports(doc.tree)
-    val hasControllerImport = imports.hasImport(importer"play.api.mvc.Controller")
-    imports.ensureNotImport(importer"play.api.mvc.Controller")
+      def unapply(l: List[Init]): Option[String] = {
+        val ctrl = Symbol("play/api/mvc/Controller#")
+        l.find {
+          case Init(t, _, _) =>
+            val symbols = t.symbol.getParents
+            symbols.contains(ctrl)
+          case _ => false
+        }.map(_.name.syntax)
+      }
+    }
+
+    val controllerSymbol = Symbols.fromFQCN(config.controller)
+    val controllerComponentsSymbol = Symbols.fromFQCN(config.controllerComponents)
+
+    val imports = ImportHolder(doc.tree)
+
+    val inject = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(Nil)))
+    val baseCtrl = Init(controllerSymbol.toType, Name.Anonymous(), Nil)
+
+    def replaceCtrl(i: List[Init]): List[Init] = {
+      i.map {
+        case t if t.tpe.syntax == "Controller" => baseCtrl
+        case other                             => other
+      }
+    }
+
+    def replaceCtrlInSelfTypes(t: Type): Type =
+      t match {
+        case Type.Name("Controller") => controllerSymbol.toType
+        case Type.With(l, r)         => Type.With(replaceCtrlInSelfTypes(l), replaceCtrlInSelfTypes(r))
+        case other                   => other
+      }
+
+    def makeControllerComponents(isVal: Boolean): Term.Param = {
+      Term.Param(if (isVal) List(Mod.ValParam()) else Nil, Name("controllerComponents"), Some(controllerComponentsSymbol.toType), None)
+    }
+
     doc.tree
       .collect {
-        case t @ Defn.Class(_, n, _, _, Template(_, inits, _, _))
-            if hasControllerImport &&
-              inits.map(_.tpe.syntax).contains("Controller") &&
-              !config.controllerClasses.contains(n.syntax) =>
-          val valMod = if (t.isCase) Nil else List(Mod.ValParam())
-          val ctrlComp = Term.Param(valMod, Name("controllerComponents"), Some(Type.Name("ControllerComponents")), None)
-          val messagesApi = Term.Param(valMod, Name("messagesApi"), Some(Type.Name("MessagesApi")), None)
+        case t @ Defn.Class(m, n, _, _, Template(_, inits, _, _))
+            if inits.map(_.tpe.syntax).contains("Controller") &&
+              (config.abstractControllers.contains(n.syntax) || Mods.isAbstract(m)) =>
           val fixed = t
-            .mapInit(replaceController)
-            .ensureParam(ctrlComp)
-            .ensureAnnot(injectAnnot)
-            .ensureNotParam(messagesApi)
-          imports
-            .ensureImport(importer"javax.inject.Inject")
-            .ensureImport(importer"play.api.mvc.BaseController")
-            .ensureImport(importer"play.api.mvc.BaseController")
-            .ensureImport(importer"play.api.mvc.ControllerComponents")
-          ExtraPatch.replaceClassDef(t, fixed)
-
-        case t @ Defn.Class(_, _, _, _, Template(_, inits, _, _))
-            if hasControllerImport &&
-              inits.map(_.tpe.syntax).contains("Controller") =>
-          val fixed = t
-            .mapInit(replaceController)
+            .mapInit(replaceCtrl)
             .ensureMod(Mod.Abstract())
           imports
-            .ensureImport(importer"play.api.mvc.BaseController")
+            .ensureNot(importer"play.api.mvc.Controller")
+            .ensure(controllerSymbol.toImporter)
           ExtraPatch.replaceClassDef(t, fixed)
 
-        case t @ Defn.Class(_, _, _, _, Template(_, inits, _, _)) if inits.map(_.tpe.syntax).exists(tpe => config.controllerClasses.contains(tpe)) =>
-          val valMod = if (t.isCase) Nil else List(Mod.ValParam())
-          val ctrlComp = Term.Param(valMod, Name("controllerComponents"), Some(Type.Name("ControllerComponents")), None)
-          val messagesApi = Term.Param(valMod, Name("messagesApi"), Some(Type.Name("MessagesApi")), None)
+        case t @ Defn.Class(_, _, _, _, Template(_, inits, _, _)) if inits.map(_.tpe.syntax).contains("Controller") =>
           val fixed = t
-            .ensureParam(ctrlComp)
-            .ensureAnnot(injectAnnot)
-            .ensureNotParam(messagesApi)
+            .mapInit(replaceCtrl)
+            .ensureParam(makeControllerComponents(!t.isCase))
+            .ensureAnnot(inject)
+            .removeParamByName(className = Some("MessagesApi"))
+
           imports
-            .ensureImport(importer"javax.inject.Inject")
-            .ensureImport(importer"play.api.mvc.ControllerComponents")
+            .ensureNot(importer"play.api.mvc.Controller")
+            .ensure(importer"javax.inject.Inject")
+            .ensure(controllerSymbol.toImporter)
+            .ensure(controllerComponentsSymbol.toImporter)
           ExtraPatch.replaceClassDef(t, fixed)
 
-        case t @ Defn.Trait(_, _, _, _, Template(_, inits, _, _))
-            if hasControllerImport &&
-              inits.map(_.tpe.syntax).contains("Controller") =>
+        case t @ Defn.Class(_, _, _, _, Template(_, Controller(_), _, _)) =>
           val fixed = t
-            .mapInit(replaceController)
+            .ensureParam(makeControllerComponents(!t.isCase))
+            .ensureAnnot(inject)
           imports
-            .ensureImport(importer"play.api.mvc.BaseController")
+            .ensure(importer"javax.inject.Inject")
+            .ensure(controllerComponentsSymbol.toImporter)
+          ExtraPatch.replaceClassDef(t, fixed)
+
+        case t @ Defn.Trait(_, _, _, _, Template(_, inits, _, _)) if inits.map(_.tpe.syntax).contains("Controller") =>
+          val fixed = t.mapInit(replaceCtrl)
+          imports
+            .ensureNot(importer"play.api.mvc.Controller")
+            .ensure(controllerSymbol.toImporter)
           ExtraPatch.replaceTraitDef(t, fixed)
 
-        case Defn.Trait(_, _, _, _, Template(_, _, self, _))
-            if hasControllerImport &&
-              self.decltpe.exists {
-                case ControllerFinder() => true
-                case _                  => false
-              } =>
-          def replaceCtrl(t: Type): Type = t match {
-            case Type.Name("Controller") => Type.Name("BaseController")
-            case Type.With(l, r)         => Type.With(replaceCtrl(l), replaceCtrl(r))
-            case other                   => other
-          }
-          val fixed = self.copy(decltpe = self.decltpe.map(replaceCtrl))
+        case Defn.Trait(_, _, _, _, Template(_, _, self, _)) if self.decltpe.exists(Controller.unapply) =>
+          val fixed = self.copy(decltpe = self.decltpe.map(replaceCtrlInSelfTypes))
           imports
-            .ensureImport(importer"play.api.mvc.BaseController")
+            .ensureNot(importer"play.api.mvc.Controller")
+            .ensure(controllerSymbol.toImporter)
           Patch.replaceTree(self, fixed.syntax)
-
-        case Term.Apply(Term.Apply(Term.Select(Term.Name("Action"), _), _), List(b: Term.Block)) =>
-          patchActionWithImplicitRequestArg(b)
-        case Term.Apply(Term.Apply(Term.Name("Action"), _), List(b: Term.Block)) =>
-          patchActionWithImplicitRequestArg(b)
-        case Term.Apply(Term.Select(Term.Name("Action"), _), List(b: Term.Block)) =>
-          patchActionWithImplicitRequestArg(b)
-        case Term.Apply(Term.Name("Action"), List(b: Term.Block)) =>
-          patchActionWithImplicitRequestArg(b)
       }
       .asPatch
       .atomic +

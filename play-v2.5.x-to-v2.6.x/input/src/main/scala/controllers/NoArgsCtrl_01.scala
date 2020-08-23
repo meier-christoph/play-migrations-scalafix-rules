@@ -12,7 +12,7 @@ class NoArgsCtrl_01 extends Controller {
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action {
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

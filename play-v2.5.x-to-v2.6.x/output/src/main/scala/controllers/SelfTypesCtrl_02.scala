@@ -11,7 +11,7 @@ class SelfTypesCtrl_02 @Inject() (val controllerComponents: ControllerComponents
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action { implicit _request =>
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

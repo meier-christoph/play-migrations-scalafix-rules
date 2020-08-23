@@ -11,7 +11,7 @@ class StandardInjectCtrl_01 @Inject() (val controllerComponents: ControllerCompo
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action { implicit _request =>
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

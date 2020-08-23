@@ -6,15 +6,22 @@ object Classes {
 
   implicit class ClassesExt(val c: Defn.Class) extends AnyVal {
 
-    def isCase: Boolean = Mods.isCase(c.mods)
+    def debug(): Unit = {
+      println(c.structure)
+    }
 
-    def rename(name: String): Defn.Class = c.copy(
-      name = Type.Name(name)
-    )
+    def isCase: Boolean =
+      Mods.isCase(c.mods)
 
-    def mapMods(fn: List[Mod] => List[Mod]): Defn.Class = c.copy(
-      mods = fn(c.mods)
-    )
+    def rename(name: String): Defn.Class =
+      c.copy(
+        name = Type.Name(name)
+      )
+
+    // modifiers (e.g. case, abstract, ...) and annotations
+
+    def mapMods(fn: List[Mod] => List[Mod]): Defn.Class =
+      c.copy(mods = fn(c.mods))
 
     def ensureMod(m: Mod): Defn.Class =
       if (!hasMod(m)) addMod(m) else c
@@ -23,21 +30,25 @@ object Classes {
     def addMod(m: Mod): Defn.Class =
       mapMods(_ :+ m)
 
-    def mapParam(fn: List[List[Term.Param]] => List[List[Term.Param]]): Defn.Class = c.copy(
-      ctor = c.ctor.copy(
-        paramss = fn(c.ctor.paramss)
+    def ensureAnnot(a: Mod.Annot): Defn.Class =
+      c.copy(
+        ctor = c.ctor.copy(
+          mods = if (Mods.contains(c.ctor.mods, a)) {
+            c.ctor.mods
+          } else {
+            c.ctor.mods :+ a
+          }
+        )
       )
-    )
 
-    def ensureAnnot(a: Mod.Annot): Defn.Class = c.copy(
-      ctor = c.ctor.copy(
-        mods = if (Mods.contains(c.ctor.mods, a)) {
-          c.ctor.mods
-        } else {
-          c.ctor.mods :+ a
-        }
+    // params
+
+    def mapParam(fn: List[List[Term.Param]] => List[List[Term.Param]]): Defn.Class =
+      c.copy(
+        ctor = c.ctor.copy(
+          paramss = fn(c.ctor.paramss)
+        )
       )
-    )
 
     def ensureParam(p: Term.Param): Defn.Class =
       if (!hasParam(p)) addParam(p) else c
@@ -103,11 +114,14 @@ object Classes {
       }
     }
 
-    def mapInit(fn: List[Init] => List[Init]): Defn.Class = c.copy(
-      templ = c.templ.copy(
-        inits = fn(c.templ.inits)
+    // types (e.g. extends and with)
+
+    def mapInit(fn: List[Init] => List[Init]): Defn.Class =
+      c.copy(
+        templ = c.templ.copy(
+          inits = fn(c.templ.inits)
+        )
       )
-    )
 
     def ensureType(i: Init): Defn.Class =
       if (!hasType(i)) addType(i) else c
@@ -124,12 +138,14 @@ object Classes {
     def addType(i: Init): Defn.Class = mapInit(_ :+ i)
     def removeType(i: Init): Defn.Class = mapInit(_.filterNot(_.tpe == i.tpe))
 
-    def mapBody(fn: List[Stat] => List[Stat]): Defn.Class = c.copy(
-      templ = c.templ.copy(
-        stats = fn(c.templ.stats)
-      )
-    )
+    // body
 
+    def mapBody(fn: List[Stat] => List[Stat]): Defn.Class =
+      c.copy(
+        templ = c.templ.copy(
+          stats = fn(c.templ.stats)
+        )
+      )
     def ignoreBody: Defn.Class = mapBody(_ => Nil)
   }
 }

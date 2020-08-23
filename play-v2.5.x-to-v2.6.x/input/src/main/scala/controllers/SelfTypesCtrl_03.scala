@@ -13,7 +13,7 @@ class SelfTypesCtrl_03 @Inject() extends Controller with MyBaseTraitWithOutOfOrd
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action {
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

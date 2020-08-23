@@ -11,7 +11,7 @@ class CustomBaseCtrl_02 @Inject() (d: Dummy, val controllerComponents: Controlle
   // keep comments
 
   /** keep doc */
-  def index: Action[AnyContent] = Action { implicit _request =>
+  def index: Action[AnyContent] = Action { implicit req =>
     Ok("") // keep comments
   }
 

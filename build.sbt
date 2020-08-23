@@ -3,7 +3,7 @@ inThisBuild(
   List(
     organization := "com.typesafe.play.contrib",
     scalaVersion := V.scala211,
-    crossScalaVersions := Seq(V.scala211, V.scala212),
+    crossScalaVersions := List(V.scala211, V.scala212),
     addCompilerPlugin(scalafixSemanticdb),
     scalacOptions ++= List("-Yrangepos"),
     updateOptions := updateOptions.value.withLatestSnapshots(false)
@@ -23,7 +23,7 @@ lazy val core = project
 
 // migrations from v2.5.x to v2.6.x
 
-lazy val rules26 = project
+lazy val rules25 = project
   .in(file("play-v2.5.x-to-v2.6.x/rules"))
   .dependsOn(core)
   .settings(
@@ -35,35 +35,37 @@ lazy val input25 = project
   .in(file("play-v2.5.x-to-v2.6.x/input"))
   .settings(skip in publish := true)
   .settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play25,
       "com.typesafe.play" %% "play-ws" % play25
     )
   )
 
-lazy val output26 = project
+lazy val output25 = project
   .in(file("play-v2.5.x-to-v2.6.x/output"))
   .settings(skip in publish := true)
   .settings(
-    libraryDependencies ++= Seq(
+    libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play26,
       "com.typesafe.play" %% "play-ws" % play26
     )
   )
 
-lazy val tests26 = project
+lazy val tests25 = project
   .in(file("play-v2.5.x-to-v2.6.x/tests"))
   .settings(
     skip in publish := true,
-    libraryDependencies += "ch.epfl.scala" % "scalafix-testkit" % V.scalafixVersion % Test cross CrossVersion.full,
+    libraryDependencies ++= List(
+      "ch.epfl.scala" % "scalafix-testkit" % V.scalafixVersion % Test cross CrossVersion.full
+    ),
     compile.in(Compile) :=
       compile.in(Compile).dependsOn(compile.in(input25, Compile)).value,
     scalafixTestkitOutputSourceDirectories :=
-      sourceDirectories.in(output26, Compile).value,
+      sourceDirectories.in(output25, Compile).value,
     scalafixTestkitInputSourceDirectories :=
       sourceDirectories.in(input25, Compile).value,
     scalafixTestkitInputClasspath :=
       fullClasspath.in(input25, Compile).value
   )
-  .dependsOn(rules26)
+  .dependsOn(rules25)
   .enablePlugins(ScalafixTestkitPlugin)
