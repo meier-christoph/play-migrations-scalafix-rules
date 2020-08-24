@@ -7,8 +7,9 @@ import scala.meta._
 final class MigrateConfiguration() extends SemanticRule("MigrateConfiguration") {
   override def fix(implicit doc: SemanticDocument): Patch = {
     object Config {
+      val sym: Symbol = Symbols.fromFQCN("play.api.Configuration")
       def unapply(t: Term): Option[Term] = {
-        if (t.symbol.owner.value == "play/api/Configuration#") {
+        if (t.isOfType(sym)) {
           Some(t)
         } else None
       }

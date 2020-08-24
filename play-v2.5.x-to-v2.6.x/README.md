@@ -53,3 +53,5 @@ Warning: your code may compile after using this rule, but your app will still fa
          you are doing proper testing post migration.
 
 [Guide](https://www.playframework.com/documentation/2.8.x/Migration26#Scala-Configuration-API)
+
+## TODO: json index lookup

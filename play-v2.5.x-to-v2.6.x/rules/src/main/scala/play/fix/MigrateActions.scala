@@ -1,6 +1,5 @@
 package play.fix
 
-import play.fix.Symbols._
 import scalafix.v1._
 
 import scala.meta._
@@ -8,9 +7,9 @@ import scala.meta._
 final class MigrateActions() extends SemanticRule("MigrateActions") {
   override def fix(implicit doc: SemanticDocument): Patch = {
     object Action {
+      val sym: Symbol = Symbols.fromFQCN("play.api.mvc.ActionBuilder")
       def unapply(t: Term): Boolean = {
-        val symbols = t.getParents
-        symbols.map(_.value).contains("play/api/mvc/ActionBuilder#")
+        t.isInstanceOfType(sym)
       }
     }
 

@@ -1,9 +1,6 @@
 package play.fix
 
 import metaconfig.Configured
-import play.fix.Classes._
-import play.fix.Symbols._
-import play.fix.Traits._
 import scalafix.v1._
 
 import scala.meta._
@@ -19,21 +16,21 @@ final class MigrateControllers(config: MigrateControllersConfig) extends Semanti
 
   override def fix(implicit doc: SemanticDocument): Patch = {
     object Controller {
-      val f = new TypeFinder("Controller")
-      def unapply(t: Type): Boolean = f.unapply(t)
+      val sym: Symbol = Symbols.fromFQCN("play.api.mvc.Controller")
 
-      def unapply(t: Term): Boolean = {
-        val symbols = t.getParents
-        symbols.map(_.value).contains("play/api/mvc/Controller#")
-      }
+      val f = new TypeFinder("Controller")
+      def unapply(t: Type): Boolean =
+        f.unapply(t)
+
+      def unapply(t: Term): Boolean =
+        t.isInstanceOfType(sym)
 
       def unapply(l: List[Init]): Option[String] = {
-        val ctrl = Symbol("play/api/mvc/Controller#")
         l.find {
           case Init(t, _, _) =>
-            val symbols = t.symbol.getParents
-            symbols.contains(ctrl)
-          case _ => false
+            t.symbol.isInstanceOfType(sym)
+          case _ =>
+            false
         }.map(_.name.syntax)
       }
     }

@@ -1,7 +1,5 @@
 package play.fix
 
-import play.fix.Classes._
-import play.fix.Traits._
 import scalafix.patch.Patch
 
 import scala.meta._

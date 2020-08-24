@@ -7,8 +7,9 @@ import scala.meta._
 final class MigrateCacheApi() extends SemanticRule("MigrateCacheApi") {
   override def fix(implicit doc: SemanticDocument): Patch = {
     object CacheApi {
+      val sym: Symbol = Symbols.fromFQCN("play.api.cache.CacheApi")
       def unapply(t: Term): Option[Term] = {
-        if (t.symbol.owner.value == "play/api/cache/CacheApi#") {
+        if (t.isOfType(sym)) {
           Some(t)
         } else None
       }

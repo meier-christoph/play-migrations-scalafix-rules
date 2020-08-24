@@ -1,10 +1,16 @@
-package play.fix
+package play.fix.syntax
+
+import play.fix.Mods
+import play.fix.syntax.ClassesSyntax._
 
 import scala.meta._
 
-object Classes {
-
-  implicit class ClassesExt(val c: Defn.Class) extends AnyVal {
+trait ClassesSyntax {
+  implicit final def fixClassOps(c: Defn.Class): ClassOps =
+    new ClassOps(c)
+}
+object ClassesSyntax {
+  class ClassOps(val c: Defn.Class) extends AnyVal {
 
     def debug(): Unit = {
       println(c.structure)

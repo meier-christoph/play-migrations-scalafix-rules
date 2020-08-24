@@ -1,6 +1,5 @@
 package play.fix
 
-import play.fix.Classes._
 import scalafix.v1._
 
 import scala.meta._
