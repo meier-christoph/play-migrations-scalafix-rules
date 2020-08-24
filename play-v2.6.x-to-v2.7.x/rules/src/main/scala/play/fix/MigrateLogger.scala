@@ -50,8 +50,8 @@ final class MigrateLogger() extends SemanticRule("MigrateLogger") {
             if (internal.nonEmpty) {
               buf += internal.asPatch
               imports.ensure(importer"play.api.Logging")
-//              val fixed = t.ensureType(logging)
-//              buf += ExtraPatch.replaceClassDef(t, fixed)
+              val fixed = t.ensureType(logging)
+              buf += ExtraPatch.replaceObjectDef(t, fixed)
             }
           case _ =>
             super.apply(tree)

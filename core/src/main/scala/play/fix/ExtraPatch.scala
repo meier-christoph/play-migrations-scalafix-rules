@@ -50,4 +50,17 @@ object ExtraPatch {
     val toAdd = to.ignoreBody.syntax // remove the body from this one as we will keep the original
     clearTraitDef(from) + Patch.addLeft(from, toAdd + " ")
   }
+
+  def clearObjectDef(c: Defn.Object)(implicit dialect: Dialect): Patch = {
+    val toRm = c.tokens.takeWhile {
+      case LeftBrace() => false
+      case _           => true
+    }
+    toRm.foldLeft(Patch.empty)(_ + Patch.removeToken(_)).atomic
+  }
+
+  def replaceObjectDef(from: Defn.Object, to: Defn.Object)(implicit dialect: Dialect): Patch = {
+    val toAdd = to.ignoreBody.syntax // remove the body from this one as we will keep the original
+    clearObjectDef(from) + Patch.addLeft(from, toAdd + " ")
+  }
 }
