@@ -54,4 +54,9 @@ Warning: your code may compile after using this rule, but your app will still fa
 
 [Guide](https://www.playframework.com/documentation/2.8.x/Migration26#Scala-Configuration-API)
 
+### MigrateWSClient
+
+Changes the methods in `WSRequest` and `WSResponse` that have been renamed and deprecated.
+to the new ones.
+
 ## TODO: json index lookup
