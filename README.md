@@ -32,6 +32,7 @@ $ sbt
 
 Run only a single test :
 
-```
-sbt tests25/testOnly -- -z WS
+```sh
+$ sbt
+> tests25/testOnly -- -z WS
 ```
