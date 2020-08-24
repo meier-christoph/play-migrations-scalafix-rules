@@ -1,6 +1,3 @@
-/*
-rule = MigrateWSClient
- */
 // format: off
 package services
 

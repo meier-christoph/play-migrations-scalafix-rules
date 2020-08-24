@@ -2,16 +2,12 @@ package play.fix
 
 import scalafix.v1._
 
-import scala.meta._
-
 final class MigrateWSClient() extends SemanticRule("MigrateWSClient") {
   override def fix(implicit doc: SemanticDocument): Patch = {
-    doc.tree
-      .collect {
-        case t @ Term.ApplyType(Term.Select(field, Term.Name("getOrElse")), List(tpe)) =>
-          Patch.empty
-      }
-      .asPatch
-      .atomic
+    Patch.replaceSymbols(
+      "play/api/libs/ws/WSRequest#withQueryString()." -> "play/api/libs/ws/WSRequest#withQueryStringParameters().",
+      "play/api/libs/ws/WSRequest#withHeaders()." -> "play/api/libs/ws/WSRequest#addHttpHeaders().",
+      "play/api/libs/ws/WSResponse#allHeaders()." -> "play/api/libs/ws/WSResponse#headers()."
+    )
   }
 }
