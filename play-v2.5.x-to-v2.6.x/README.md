@@ -59,4 +59,10 @@ Warning: your code may compile after using this rule, but your app will still fa
 Changes the methods in `WSRequest` and `WSResponse` that have been renamed and deprecated.
 to the new ones.
 
-## TODO: json index lookup
+### MigrateJsLookup
+
+Revert changes on the behavior of `apply(i: Int)` on an `JsArray` which 
+will now throw an exception. Replace it with `\(i: Int)` to keep the
+same behavior as before.
+
+[Guide](https://www.playframework.com/documentation/2.8.x/Migration26#Play-JSON-API-changes)
