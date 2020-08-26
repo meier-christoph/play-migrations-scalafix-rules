@@ -3,18 +3,48 @@ package play.fix
 import metaconfig.Configured
 import scalafix.v1._
 
+import scala.collection.mutable
 import scala.meta._
 import scala.meta.transversers.SimpleTraverser
 
 final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRule("MigrateInjectAll") {
   def this() = this(MigrateInjectAllConfig.default)
 
-  val inject: Mod.Annot = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(Nil)))
-
   override def withConfiguration(config: Configuration): Configured[Rule] = {
     config.conf
       .getOrElse("MigrateInjectAll")(this.config)
       .map(newConfig => new MigrateInjectAll(newConfig))
+  }
+
+  val inject: Mod.Annot = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(Nil)))
+
+  def makeParam(name: String, clazz: String): Term.Param = {
+    Term.Param(Nil, Name(name), Some(Type.Name(clazz)), None)
+  }
+
+  val nextTypes = new mutable.ListBuffer[Symbol]()
+
+  override def beforeStart(): Unit = {
+    nextTypes.clear()
+  }
+
+  override def afterComplete(): Unit = {
+    val next = nextTypes
+      .map { sym =>
+        sym.value.replace('/', '.').stripSuffix("#")
+      }
+      .filter(_.nonEmpty)
+    if (next.nonEmpty) {
+      println("Rules for next run:")
+      println("-----")
+      println("MigrateInjectAll.types = [")
+      next.foreach { name =>
+        println(s""" "$name",""")
+      }
+      println("]")
+      println("-----")
+    }
+    ()
   }
 
   override def fix(implicit doc: SemanticDocument): Patch = {
@@ -73,16 +103,11 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
       }
     }
 
-    def makeParam(name: String, clazz: String): Term.Param = {
-      Term.Param(Nil, Name(name), Some(Type.Name(clazz)), None)
-    }
-
     val buf = scala.collection.mutable.ListBuffer[Patch]()
 
     def fixClass(tree: Tree, t: Defn.Class, fix: Defn.Class => Patch): Boolean = {
       var fixIt = false
       var fixed = t.ensureAnnot(inject)
-      imports.ensure(importer"javax.inject.Inject")
 
       val db = replaceDatabase(tree)
       if (db.nonEmpty) {
@@ -109,6 +134,8 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
       }
 
       if (fixIt) {
+        nextTypes += t.symbol
+        imports.ensure(importer"javax.inject.Inject")
         buf += fix(fixed)
       }
 
@@ -143,6 +170,62 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
   }
 
   def fixCustom(implicit doc: SemanticDocument): Patch = {
-    Patch.empty
+    val imports = ImportHolder(doc.tree)
+
+    object ToReplace {
+      val symbols: List[Symbol] = config.types.map { s =>
+        Symbol(s.replace('.', '/') + ".")
+      }
+      def unapply(t: Term): Option[String] = {
+        val sym = t.symbol
+        symbols.find(_ == sym).map { _ =>
+          t.syntax
+        }
+      }
+    }
+
+    val buf = scala.collection.mutable.ListBuffer[Patch]()
+
+    def fixClass(tree: Tree, t: Defn.Class, fix: Defn.Class => Patch): Boolean = {
+      var fixIt = false
+      var fixed = t.ensureAnnot(inject)
+
+      def replaceVariable(tree: Tree): List[Patch] = {
+        tree.collect {
+          case t @ ToReplace(name) =>
+            fixed = fixed.ensureParam(makeParam(s"_$name", name))
+            Patch.replaceTree(t, s"_$name")
+        }
+      }
+
+      val cache = replaceVariable(tree)
+      if (cache.nonEmpty) {
+        fixIt = true
+        buf += cache.asPatch
+      }
+
+      if (fixIt) {
+        nextTypes += t.symbol
+        imports.ensure(importer"javax.inject.Inject")
+        buf += fix(fixed)
+      }
+
+      fixIt
+    }
+
+    object traverser extends SimpleTraverser {
+      override def apply(tree: Tree): Unit = {
+        tree match {
+          case t @ Defn.Class(_, _, _, _, _) =>
+            fixClass(t, t, fix => ExtraPatch.replaceClassDef(t, fix))
+          case t @ Defn.Object(_, _, _) =>
+            fixClass(t, t.toClass, fix => ExtraPatch.replaceObjectDef(t, fix))
+          case _ =>
+            super.apply(tree)
+        }
+      }
+    }
+    traverser(doc.tree)
+    buf.toList.asPatch.atomic + imports.asPatch
   }
 }
