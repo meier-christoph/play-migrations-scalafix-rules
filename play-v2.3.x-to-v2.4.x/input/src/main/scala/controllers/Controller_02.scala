@@ -1,11 +1,17 @@
+/*
+rule = MigrateInjectAll
+MigrateInjectAll.types = [
+  "services.FooDAO_01"
+]
+ */
 // format: off
 package controllers
 
+import javax.inject.Inject
 import play.api.mvc.{Action, AnyContent, Controller}
 import services.FooDAO_01
-import javax.inject.Inject
 
-class Controller_01 @Inject() extends Controller {
+class Controller_02 @Inject() extends Controller {
   // keep comments
 
   /** keep doc */

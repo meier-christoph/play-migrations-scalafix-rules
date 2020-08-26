@@ -40,9 +40,12 @@ lazy val input24 = project
   .settings(skip in publish := true)
   .settings(
     libraryDependencies ++= List(
+      "javax.inject" % "javax.inject" % "1",
       "com.typesafe.play" %% "play" % play23,
       "com.typesafe.play" %% "play-cache" % play23,
-      "com.typesafe.play" %% "play-ws" % play23
+      "com.typesafe.play" %% "play-jdbc" % play23,
+      "com.typesafe.play" %% "play-ws" % play23,
+      "com.typesafe.play" %% "anorm" % play23
     )
   )
 
@@ -53,7 +56,9 @@ lazy val output24 = project
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play24,
       "com.typesafe.play" %% "play-cache" % play24,
-      "com.typesafe.play" %% "play-ws" % play24
+      "com.typesafe.play" %% "play-jdbc" % play24,
+      "com.typesafe.play" %% "play-ws" % play24,
+      "com.typesafe.play" %% "anorm" % "2.4.0"
     )
   )
 

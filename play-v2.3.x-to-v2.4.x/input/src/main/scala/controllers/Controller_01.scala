@@ -5,6 +5,7 @@ rule = MigrateInjectControllers
 package controllers
 
 import play.api.mvc.{Action, AnyContent, Controller}
+import services.FooDAO_01
 
 object Controller_01 extends Controller {
   // keep comments
@@ -12,6 +13,7 @@ object Controller_01 extends Controller {
   /** keep doc */
   def index: Action[AnyContent] =
     Action { implicit req =>
+      val foo = FooDAO_01.fetchAll
       Ok("") // keep comments
     }
 
