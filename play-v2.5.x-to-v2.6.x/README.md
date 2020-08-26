@@ -1,11 +1,9 @@
 ## Migration Rules
 
-This module contains scalafix rules for migrating play v2.5.x to play v2.6.x
+This module contains scalafix rules for migrating play v2.5 to play v2.6
 
-While these rules won't cover the entire migration process, they should help in the process.
-Some rules are complex (e.g. MigrateControllers) and will likely not cover all use cases or 
-generate code that may not compile. If that's the case you will need to finish the migration
-manually.
+There are a lot of changes in this migration, mostly the continuation from v2.4
+which introduced DI.
 
 See the official migration guide for more info :
 https://www.playframework.com/documentation/2.8.x/Migration26

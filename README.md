@@ -1,5 +1,10 @@
 # play-migrations-scalafix-rules
 
+While these rules won't cover the entire migration process, they should help in the process.
+Some rules are complex (e.g. MigrateControllers) and will likely not cover all use cases or 
+generate code that may not compile. If that's the case you will need to finish the migration
+manually.
+
 ### Usage
 
 Start by installing the sbt plugin in `project/plugins.sbt`
@@ -74,5 +79,5 @@ Run only a single test :
 
 ```sh
 $ sbt
-> tests25/testOnly -- -z WS
+> tests26/testOnly -- -z WS
 ```

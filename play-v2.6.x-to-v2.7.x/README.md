@@ -1,11 +1,11 @@
 ## Migration Rules
 
-This module contains scalafix rules for migrating play v2.6.x to play v2.7.x
+This module contains scalafix rules for migrating play v2.6 to play v2.7
 
-While these rules won't cover the entire migration process, they should help in the process.
-Some rules are complex (e.g. MigrateControllers) and will likely not cover all use cases or 
-generate code that may not compile. If that's the case you will need to finish the migration
-manually.
+Compared to the migration for play v2.6 this one is much easier.
+Also, v2.7 did not last very long before it was replaced with v2.8
+and from our experience we could just upgrade straight to v2.8 without 
+any changes.
 
 See the official migration guide for more info :
 https://www.playframework.com/documentation/2.8.x/Migration27
