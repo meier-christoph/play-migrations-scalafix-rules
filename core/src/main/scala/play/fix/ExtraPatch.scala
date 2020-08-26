@@ -63,4 +63,9 @@ object ExtraPatch {
     val toAdd = to.ignoreBody.syntax // remove the body from this one as we will keep the original
     clearObjectDef(from) + Patch.addLeft(from, toAdd + " ")
   }
+
+  def replaceObjectDef(from: Defn.Object, to: Defn.Class)(implicit dialect: Dialect): Patch = {
+    val toAdd = to.ignoreBody.syntax // remove the body from this one as we will keep the original
+    clearObjectDef(from) + Patch.addLeft(from, toAdd + " ")
+  }
 }

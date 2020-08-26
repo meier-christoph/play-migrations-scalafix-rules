@@ -11,6 +11,9 @@ trait TraitSyntax {
 object TraitSyntax {
   class TraitOps(val c: Defn.Trait) extends AnyVal {
 
+    def debug(): Unit =
+      println(c.structure)
+
     def mapInit(fn: List[Init] => List[Init]): Defn.Trait =
       c.copy(
         templ = c.templ.copy(

@@ -11,6 +11,9 @@ trait ObjectSyntax {
 object ObjectSyntax {
   class ObjectOps(val c: Defn.Object) extends AnyVal {
 
+    def debug(): Unit =
+      println(c.structure)
+
     def mapInit(fn: List[Init] => List[Init]): Defn.Object =
       c.copy(
         templ = c.templ.copy(
@@ -49,5 +52,8 @@ object ObjectSyntax {
       )
 
     def ignoreBody: Defn.Object = mapBody(_ => Nil)
+
+    def toClass: Defn.Class =
+      Defn.Class(c.mods, Type.Name(c.name.value), Nil, Ctor.Primary(Nil, Name.Anonymous(), Nil), c.templ)
   }
 }

@@ -12,9 +12,8 @@ trait ClassesSyntax {
 object ClassesSyntax {
   class ClassOps(val c: Defn.Class) extends AnyVal {
 
-    def debug(): Unit = {
+    def debug(): Unit =
       println(c.structure)
-    }
 
     def isCase: Boolean =
       Mods.isCase(c.mods)
