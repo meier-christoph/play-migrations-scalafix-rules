@@ -1,3 +1,4 @@
 play.fix.MigrateInjectControllers
 play.fix.MigrateInjectAll
 play.fix.MigrateJsLookup
+play.fix.MigrateJson
