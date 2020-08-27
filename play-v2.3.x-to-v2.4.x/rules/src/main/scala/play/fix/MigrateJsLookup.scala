@@ -38,7 +38,7 @@ final class MigrateJsLookup(config: MigrateJsLookupConfig) extends SemanticRule(
             ()
           case Term.Select(JsLookup(Term.ApplyInfix(_, Term.Name("\\"), _, _)), Term.Name(n)) if allowed.contains(n) =>
             ()
-          case t @ JsLookup(_) =>
+          case t @ JsLookup(Term.ApplyInfix(_, Term.Name("\\"), _, _)) =>
             imports.ensure(importer"play.api.libs.json.JsNull")
             buf += Patch.replaceTree(t, s"($t).getOrElse(JsNull)")
           case _ =>

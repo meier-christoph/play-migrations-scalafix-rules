@@ -39,7 +39,6 @@ lazy val adapters24 = project
   .in(file("play-v2.3.x-to-v2.4.x/adapters"))
   .settings(
     moduleName := "play-migrations-v23-to-v24-adapters",
-    crossScalaVersions := List(V.scala211, V.scala212, V.scala213, "2.10.7"),
     libraryDependencies ++= List(
       "javax.inject" % "javax.inject" % "1"
     )
