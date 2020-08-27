@@ -5,6 +5,9 @@ import scalafix.v1._
 import scala.meta._
 
 final class MigrateInjectControllers() extends SemanticRule("MigrateInjectControllers") {
+
+  val inject: Mod.Annot = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(Nil)))
+
   override def fix(implicit doc: SemanticDocument): Patch = {
     object Controller {
       val sym: Symbol = Symbols.fromFQCN("play.api.mvc.Controller")
@@ -22,10 +25,7 @@ final class MigrateInjectControllers() extends SemanticRule("MigrateInjectContro
       }
     }
 
-    val inject = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(Nil)))
-
     val imports = ImportHolder(doc.tree)
-
     doc.tree
       .collect {
         case t @ Defn.Object(_, _, Template(_, Controller(_), _, _)) =>

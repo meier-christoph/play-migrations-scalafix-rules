@@ -55,10 +55,18 @@ object PlayFixPlugin extends AutoPlugin {
   override def buildSettings: Seq[Setting[_]] =
     List(
       scalafixDependencies ++= List(
+        "com.typesafe.play.contrib" %% "play-migrations-v23-to-v24-scalafix-rules" % "0.1.0-SNAPSHOT",
+        "com.typesafe.play.contrib" %% "play-migrations-v24-to-v25-scalafix-rules" % "0.1.0-SNAPSHOT",
         "com.typesafe.play.contrib" %% "play-migrations-v25-to-v26-scalafix-rules" % "0.1.0-SNAPSHOT",
         "com.typesafe.play.contrib" %% "play-migrations-v26-to-v27-scalafix-rules" % "0.1.0-SNAPSHOT"
       ),
       scalafixConfig := Some(file("~/shared/scalafix.conf")) // see examples
+    )
+  override def projectSettings: Seq[Setting[_]] =
+    List(
+      libraryDependencies ++= List(
+        "com.typesafe.play.contrib" %% "play-migrations-v23-to-v24-adapters" % "0.1.0-SNAPSHOT"
+      )
     )
 }
 ```

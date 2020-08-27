@@ -39,13 +39,9 @@ lazy val adapters24 = project
   .in(file("play-v2.3.x-to-v2.4.x/adapters"))
   .settings(
     moduleName := "play-migrations-v23-to-v24-adapters",
+    crossScalaVersions := List(V.scala211, V.scala212, V.scala213, "2.10.7"),
     libraryDependencies ++= List(
-      "javax.inject" % "javax.inject" % "1",
-      "com.typesafe.play" %% "play" % play23 % Optional,
-      "com.typesafe.play" %% "play-cache" % play23 % Optional,
-      "com.typesafe.play" %% "play-jdbc" % play23 % Optional,
-      "com.typesafe.play" %% "play-ws" % play23 % Optional,
-      "com.typesafe.play" %% "anorm" % play23 % Optional
+      "javax.inject" % "javax.inject" % "1"
     )
   )
 
@@ -54,6 +50,7 @@ lazy val input24 = project
   .dependsOn(adapters24)
   .settings(skip in publish := true)
   .settings(
+    crossScalaVersions := List(V.scala211),
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play23,
       "com.typesafe.play" %% "play-cache" % play23,
@@ -67,6 +64,7 @@ lazy val output24 = project
   .in(file("play-v2.3.x-to-v2.4.x/output"))
   .settings(skip in publish := true)
   .settings(
+    crossScalaVersions := List(V.scala211),
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play24,
       "com.typesafe.play" %% "play-cache" % play24,
@@ -80,6 +78,7 @@ lazy val tests24 = project
   .in(file("play-v2.3.x-to-v2.4.x/tests"))
   .settings(
     skip in publish := true,
+    crossScalaVersions := List(V.scala211),
     libraryDependencies ++= List(
       "ch.epfl.scala" % "scalafix-testkit" % V.scalafixVersion % Test cross CrossVersion.full
     ),
