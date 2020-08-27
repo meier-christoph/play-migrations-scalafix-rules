@@ -35,12 +35,26 @@ lazy val rules24 = project
     libraryDependencies += "ch.epfl.scala" %% "scalafix-core" % V.scalafixVersion
   )
 
+lazy val adapters24 = project
+  .in(file("play-v2.3.x-to-v2.4.x/adapters"))
+  .settings(
+    moduleName := "play-migrations-v23-to-v24-adapters",
+    libraryDependencies ++= List(
+      "javax.inject" % "javax.inject" % "1",
+      "com.typesafe.play" %% "play" % play23 % Optional,
+      "com.typesafe.play" %% "play-cache" % play23 % Optional,
+      "com.typesafe.play" %% "play-jdbc" % play23 % Optional,
+      "com.typesafe.play" %% "play-ws" % play23 % Optional,
+      "com.typesafe.play" %% "anorm" % play23 % Optional
+    )
+  )
+
 lazy val input24 = project
   .in(file("play-v2.3.x-to-v2.4.x/input"))
+  .dependsOn(adapters24)
   .settings(skip in publish := true)
   .settings(
     libraryDependencies ++= List(
-      "javax.inject" % "javax.inject" % "1",
       "com.typesafe.play" %% "play" % play23,
       "com.typesafe.play" %% "play-cache" % play23,
       "com.typesafe.play" %% "play-jdbc" % play23,

@@ -1,13 +1,12 @@
 // format: off
 package services
 
-import play.api.Play.current
-import play.api.cache.Cache
 import javax.inject.Inject
+import play.api.cache.CacheApi
 
-class BarDAO_02 @Inject() (_FooDAO_01: FooDAO_01) {
+class BarDAO_02 @Inject() (_cache: CacheApi, _FooDAO_01: FooDAO_01) {
   def fetchAll: List[String] = {
-    Cache.getOrElse("foo") {
+    _cache.getOrElse("foo") {
       _FooDAO_01.fetchAll
     }
   }

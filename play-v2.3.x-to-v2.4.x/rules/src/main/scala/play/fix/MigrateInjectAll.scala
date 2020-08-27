@@ -38,9 +38,16 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
       println("Rules for next run:")
       println("-----")
       println("MigrateInjectAll.types = [")
+      var first = true
       next.foreach { name =>
-        println(s""" "$name",""")
+        if (first) {
+          first = false
+          print(s"""  "$name"""")
+        } else {
+          print(s""",\n  "$name"""")
+        }
       }
+      print("\n")
       println("]")
       println("-----")
     }

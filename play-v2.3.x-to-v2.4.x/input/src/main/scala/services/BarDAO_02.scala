@@ -7,12 +7,12 @@ MigrateInjectAll.types = [
 // format: off
 package services
 
-import play.api.Play.current
-import play.api.cache.Cache
+import javax.inject.Inject
+import play.api.cache.CacheApi
 
-class BarDAO_02 {
+class BarDAO_02 @Inject() (_cache: CacheApi) {
   def fetchAll: List[String] = {
-    Cache.getOrElse("foo") {
+    _cache.getOrElse("foo") {
       FooDAO_01.fetchAll
     }
   }
