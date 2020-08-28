@@ -287,7 +287,7 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
         tree match {
           case t @ Defn.Class(_, _, _, _, _) =>
             fixClass(t, t, fix => ExtraPatch.replaceClassDef(t, fix))
-          case t @ Defn.Object(_, _, _) =>
+          case t @ Defn.Object(_, _, _) if !config.types.contains(t.symbol.toFQCN) =>
             fixClass(t, t.toClass, fix => ExtraPatch.replaceObjectDef(t, fix))
           case _ =>
             super.apply(tree)
