@@ -38,6 +38,7 @@ trait FooDAO_02 {
   // keep comments
 
 }
+@deprecated("(scalafix) Migrate to DI", "2.3.0")
 object FooDAO_02 {
   // FIXME(scalafix): Remove once migration is completed ("services.FooDAO_02")
   lazy val _instance: FooDAO_02 = Play.current.injector.instanceOf[FooDAO_02]

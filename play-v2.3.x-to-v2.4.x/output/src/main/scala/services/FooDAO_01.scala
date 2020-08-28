@@ -13,7 +13,7 @@ import play.api.Play
 import play.api.db.Database
 import play.api.libs.ws.WSClient
 
-class FooDAO_01 @Inject() (_database: Database, _wsClient: WSClient) {
+class FooDAO_01 @Inject() (val _database: Database, val _wsClient: WSClient) {
   def fetchAll: List[String] = {
     _database.withConnection { implicit conn =>
       SQL("select * from foo").as(SqlParser.str("foo").*)
@@ -29,6 +29,7 @@ class FooDAO_01 @Inject() (_database: Database, _wsClient: WSClient) {
       }
   }
 }
+@deprecated("(scalafix) Migrate to DI", "2.3.0")
 object FooDAO_01 {
   // FIXME(scalafix): Remove once migration is completed ("services.FooDAO_01")
   lazy val _instance: FooDAO_01 = Play.current.injector.instanceOf[FooDAO_01]

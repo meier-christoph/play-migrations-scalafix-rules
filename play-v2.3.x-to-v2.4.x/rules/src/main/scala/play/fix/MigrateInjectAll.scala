@@ -192,6 +192,7 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
             if (fixClass(t, t.toClass, fix => ExtraPatch.replaceObjectDef(t, fix))) {
               val companion =
                 s"""|
+                    |@deprecated("(scalafix) Migrate to DI", "2.3.0")
                     |object ${t.name} {
                     |  // FIXME(scalafix): Remove once migration is completed ("${t.symbol.toFQCN}")
                     |  lazy val _instance: ${t.name} = Play.current.injector.instanceOf[${t.name}]
@@ -211,6 +212,7 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
             if (fixTrait(t, t, fix => addFields(fix))) {
               val companion =
                 s"""|
+                    |@deprecated("(scalafix) Migrate to DI", "2.3.0")
                     |object ${t.name} {
                     |  // FIXME(scalafix): Remove once migration is completed ("${t.symbol.toFQCN}")
                     |  lazy val _instance: ${t.name} = Play.current.injector.instanceOf[${t.name}]
