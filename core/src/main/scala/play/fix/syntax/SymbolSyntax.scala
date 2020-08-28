@@ -71,6 +71,9 @@ object SymbolSyntax {
     def toType: Type.Name =
       Type.Name(sym.displayName)
 
+    def toFQCN: String =
+      sym.value.replace('/', '.').stripSuffix("#").stripSuffix(".")
+
     def toImporter: Importer = {
       val t :: pkg = sym.value.stripSuffix("#").split('/').reverse.toList
       def toPkg(l: List[String]): Term.Ref =

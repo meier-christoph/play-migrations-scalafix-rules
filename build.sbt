@@ -154,8 +154,18 @@ lazy val rules27 = project
     libraryDependencies += "ch.epfl.scala" %% "scalafix-core" % V.scalafixVersion
   )
 
+lazy val adapters27 = project
+  .in(file("play-v2.6.x-to-v2.7.x/adapters"))
+  .settings(
+    moduleName := "play-migrations-v26-to-v27-adapters",
+    libraryDependencies ++= List(
+      "com.typesafe.play" %% "play" % play26 % Optional
+    )
+  )
+
 lazy val input27 = project
   .in(file("play-v2.6.x-to-v2.7.x/input"))
+  .dependsOn(adapters27)
   .settings(skip in publish := true)
   .settings(
     libraryDependencies ++= List(

@@ -15,7 +15,7 @@ class BarDAO_01 @Inject() (_cache: CacheApi) {
   }
 }
 object BarDAO_01 {
-  // FIXME(scalafix): Remove once migration is completed
+  // FIXME(scalafix): Remove once migration is completed ("services.BarDAO_01")
   lazy val _instance: BarDAO_01 = Play.current.injector.instanceOf[BarDAO_01]
   implicit def _instance(f: BarDAO_01.type): BarDAO_01 = f._instance
 }

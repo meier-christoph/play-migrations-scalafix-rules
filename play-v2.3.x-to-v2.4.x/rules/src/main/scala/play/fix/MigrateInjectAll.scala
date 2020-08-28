@@ -19,7 +19,7 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
   val inject: Mod.Annot = Mod.Annot(Init(Type.Name("Inject"), Name.Anonymous(), List(Nil)))
 
   def makeParam(name: String, clazz: String): Term.Param = {
-    Term.Param(Nil, Name(name), Some(Type.Name(clazz)), None)
+    Term.Param(List(Mod.ValParam()), Name(name), Some(Type.Name(clazz)), None)
   }
 
   val nextTypes = new mutable.ListBuffer[Symbol]()
@@ -30,9 +30,7 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
 
   override def afterComplete(): Unit = {
     val next = nextTypes
-      .map { sym =>
-        sym.value.replace('/', '.').stripSuffix("#")
-      }
+      .map(_.toFQCN)
       .filter(_.nonEmpty)
     if (next.nonEmpty) {
       println("Rules for next run:")
@@ -149,17 +147,72 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
       fixIt
     }
 
+    def fixTrait(tree: Tree, t: Defn.Trait, fix: List[(String, String)] => Patch): Boolean = {
+      var fixIt = false
+      val fixed = scala.collection.mutable.ListBuffer[(String, String)]()
+
+      val db = replaceDatabase(tree)
+      if (db.nonEmpty) {
+        fixIt = true
+        buf += db.asPatch
+        imports.ensure(importer"play.api.db.Database")
+        fixed += "_database" -> "Database"
+      }
+
+      val ws = replaceWSClient(tree)
+      if (ws.nonEmpty) {
+        fixIt = true
+        buf += ws.asPatch
+        imports.ensure(importer"play.api.libs.ws.WSClient")
+        fixed += "_wsClient" -> "WSClient"
+      }
+
+      val cache = replaceCache(tree)
+      if (cache.nonEmpty) {
+        fixIt = true
+        buf += cache.asPatch
+        imports.ensure(importer"play.api.cache.CacheApi")
+        fixed += "_cache" -> "CacheApi"
+      }
+
+      if (fixIt) {
+        nextTypes += t.symbol
+        buf += fix(fixed.toList.distinct)
+      }
+
+      fixIt
+    }
+
     object traverser extends SimpleTraverser {
       override def apply(tree: Tree): Unit = {
         tree match {
           case t @ Defn.Class(_, _, _, _, _) =>
             fixClass(t, t, fix => ExtraPatch.replaceClassDef(t, fix))
-          case t @ Defn.Object(_, _, _) =>
+          case t @ Defn.Object(_, Term.Name(n), _) if !config.types.contains(n) =>
             if (fixClass(t, t.toClass, fix => ExtraPatch.replaceObjectDef(t, fix))) {
               val companion =
                 s"""|
                     |object ${t.name} {
-                    |  // FIXME(scalafix): Remove once migration is completed
+                    |  // FIXME(scalafix): Remove once migration is completed ("${t.symbol.toFQCN}")
+                    |  lazy val _instance: ${t.name} = Play.current.injector.instanceOf[${t.name}]
+                    |  implicit def _instance(f: ${t.name}.type): ${t.name} = f._instance
+                    |}
+                    |""".stripMargin
+              imports.ensure(importer"play.api.Play")
+              buf += Patch.addRight(t, companion)
+            }
+          case t @ Defn.Trait(_, _, _, _, Template(_, _, _ , bdy)) =>
+            def addFields(f: List[(String, String)]): Patch = {
+              f.map {
+                case (n, c) =>
+                  Patch.addRight(bdy.last, s"\n  def $n: $c\n")
+              }.foldLeft(Patch.empty)(_ + _)
+            }
+            if (fixTrait(t, t, fix => addFields(fix))) {
+              val companion =
+                s"""|
+                    |object ${t.name} {
+                    |  // FIXME(scalafix): Remove once migration is completed ("${t.symbol.toFQCN}")
                     |  lazy val _instance: ${t.name} = Play.current.injector.instanceOf[${t.name}]
                     |  implicit def _instance(f: ${t.name}.type): ${t.name} = f._instance
                     |}
