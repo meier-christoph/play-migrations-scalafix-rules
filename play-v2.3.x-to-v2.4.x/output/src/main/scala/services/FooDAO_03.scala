@@ -12,7 +12,7 @@ import play.api.Play
 import play.api.db.Database
 import play.api.libs.ws.WSClient
 
-trait FooDAO_02 {
+trait FooDAO_03 {
 
   // keep comments
 
@@ -39,8 +39,8 @@ trait FooDAO_02 {
 
 }
 @deprecated("(scalafix) Migrate to DI", "2.3.0")
-object FooDAO_02 {
-  // FIXME(scalafix): Remove once migration is completed ("services.FooDAO_02")
-  lazy val _instance: FooDAO_02 = Play.current.injector.instanceOf[FooDAO_02]
-  implicit def _instance(f: FooDAO_02.type): FooDAO_02 = f._instance
+object FooDAO_03 {
+  // FIXME(scalafix): Remove once migration is completed ("services.FooDAO_03")
+  lazy val _instance: FooDAO_03 = Play.current.injector.instanceOf[FooDAO_03]
+  implicit def _instance(f: FooDAO_03.type): FooDAO_03 = f._instance
 }

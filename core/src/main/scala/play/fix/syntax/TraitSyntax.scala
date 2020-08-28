@@ -14,6 +14,15 @@ object TraitSyntax {
     def debug(): Unit =
       println(c.structure)
 
+    def companion: Option[Defn.Object] =
+      c.parent.flatMap { p =>
+        val ch = p.children
+        ch.zip(ch.tail).collectFirst {
+          case (t, o @ Defn.Object(_, n, _)) if t == c && c.name.value == n.value =>
+            o
+        }
+      }
+
     def mapInit(fn: List[Init] => List[Init]): Defn.Trait =
       c.copy(
         templ = c.templ.copy(
@@ -52,5 +61,8 @@ object TraitSyntax {
       )
 
     def ignoreBody: Defn.Trait = mapBody(_ => Nil)
+
+    def toClass: Defn.Class =
+      Defn.Class(c.mods, c.name, c.tparams, c.ctor, c.templ)
   }
 }

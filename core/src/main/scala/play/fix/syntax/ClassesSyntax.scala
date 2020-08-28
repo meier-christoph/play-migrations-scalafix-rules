@@ -15,6 +15,15 @@ object ClassesSyntax {
     def debug(): Unit =
       println(c.structure)
 
+    def companion: Option[Defn.Object] =
+      c.parent.flatMap { p =>
+        val ch = p.children
+        ch.zip(ch.tail).collectFirst {
+          case (t, o @ Defn.Object(_, n, _)) if t == c && c.name.value == n.value =>
+            o
+        }
+      }
+
     def isCase: Boolean =
       Mods.isCase(c.mods)
 

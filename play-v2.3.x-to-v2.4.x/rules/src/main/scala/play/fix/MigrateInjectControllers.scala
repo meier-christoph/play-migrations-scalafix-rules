@@ -25,10 +25,21 @@ final class MigrateInjectControllers() extends SemanticRule("MigrateInjectContro
       }
     }
 
+    val ignore = new scala.collection.mutable.HashSet[Symbol]()
     val imports = ImportHolder(doc.tree)
     doc.tree
       .collect {
-        case t @ Defn.Object(_, _, Template(_, Controller(_), _, _)) =>
+        case t @ Defn.Trait(_, _, _, _, Template(_, Controller(_), _, _)) =>
+          val fixed = t.toClass.ensureAnnot(inject)
+          imports.ensure(importer"javax.inject.Inject")
+          t.companion match {
+            case Some(c @ Defn.Object(_, _, Template(_, _, _, Nil))) =>
+              ignore += c.symbol
+              ExtraPatch.replaceTraitDef(t, fixed) + Patch.removeTokens(c.tokens)
+            case _ =>
+              ExtraPatch.replaceTraitDef(t, fixed)
+          }
+        case t @ Defn.Object(_, _, Template(_, Controller(_), _, _)) if !ignore.contains(t.symbol) =>
           val fixed = t.toClass.ensureAnnot(inject)
           imports.ensure(importer"javax.inject.Inject")
           ExtraPatch.replaceObjectDef(t, fixed)

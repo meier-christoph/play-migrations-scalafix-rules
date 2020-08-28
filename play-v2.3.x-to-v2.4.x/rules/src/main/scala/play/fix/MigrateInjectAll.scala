@@ -202,14 +202,15 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
               imports.ensure(importer"play.api.Play")
               buf += Patch.addRight(t, companion)
             }
-          case t @ Defn.Trait(_, _, _, _, Template(_, _, _ , bdy)) =>
+          case t @ Defn.Trait(_, _, _, _, Template(_, _, _, bdy)) =>
             def addFields(f: List[(String, String)]): Patch = {
               f.map {
                 case (n, c) =>
-                  Patch.addRight(bdy.last, s"\n  def $n: $c\n")
+                  Patch.addRight(bdy.last, s"\n  def $n: $c = Play.current.injector.instanceOf[$c]\n")
               }.foldLeft(Patch.empty)(_ + _)
             }
             if (fixTrait(t, t, fix => addFields(fix))) {
+              imports.ensure(importer"play.api.Play")
               val companion =
                 s"""|
                     |@deprecated("(scalafix) Migrate to DI", "2.3.0")
@@ -219,8 +220,14 @@ final class MigrateInjectAll(config: MigrateInjectAllConfig) extends SemanticRul
                     |  implicit def _instance(f: ${t.name}.type): ${t.name} = f._instance
                     |}
                     |""".stripMargin
-              imports.ensure(importer"play.api.Play")
               buf += Patch.addRight(t, companion)
+
+              t.companion match {
+                case Some(c @ Defn.Object(_, _, Template(_, _, _, Nil))) =>
+                  buf += Patch.removeTokens(c.tokens)
+                case _ =>
+                  ()
+              }
             }
           case _ =>
             super.apply(tree)
