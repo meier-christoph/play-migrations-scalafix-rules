@@ -4,3 +4,5 @@
 
 ### SBT
 target/
+.sbt/
+.bsp/
