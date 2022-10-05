@@ -18,7 +18,7 @@ lazy val play24 = "2.4.11"
 lazy val play25 = "2.5.19"
 lazy val play26 = "2.6.25"
 lazy val play27 = "2.7.9"
-lazy val play28 = "2.8.8"
+lazy val play28 = "2.8.16"
 
 lazy val core = projectMatrix
   .settings(
@@ -56,7 +56,6 @@ lazy val input24 = projectMatrix
   .dependsOn(adapters24)
   .settings(publish / skip := true)
   .settings(
-    crossScalaVersions := List(V.scala211),
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play23,
       "com.typesafe.play" %% "play-cache" % play23,
@@ -72,7 +71,6 @@ lazy val output24 = projectMatrix
   .in(file("play-v2.3.x-to-v2.4.x/output"))
   .settings(publish / skip := true)
   .settings(
-    crossScalaVersions := List(V.scala211),
     libraryDependencies ++= List(
       "com.typesafe.play" %% "play" % play24,
       "com.typesafe.play" %% "play-cache" % play24,
@@ -104,6 +102,89 @@ lazy val tests24 = projectMatrix
   )
   .dependsOn(rules24)
   .enablePlugins(ScalafixTestkitPlugin)
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
+
+// migrations from v2.4.x to v2.4.x
+
+lazy val rules25 = projectMatrix
+  .in(file("play-v2.4.x-to-v2.5.x/rules"))
+  .dependsOn(core)
+  .settings(
+    moduleName := "play-migrations-v24-to-v25-scalafix-rules",
+    libraryDependencies += "ch.epfl.scala" %% "scalafix-core" % V.scalafixVersion
+  )
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(rulesCrossVersions)
+
+lazy val adapters25 = projectMatrix
+  .in(file("play-v2.4.x-to-v2.5.x/adapters"))
+  .settings(
+    moduleName := "play-migrations-v24-to-v25-adapters",
+    libraryDependencies ++= List(
+      "com.typesafe.play" %% "play" % play24 % Optional,
+      "com.typesafe.play" %% "play-cache" % play24 % Optional,
+      "com.typesafe.play" %% "play-jdbc" % play24 % Optional,
+      "com.typesafe.play" %% "play-ws" % play24 % Optional,
+      "com.typesafe.play" %% "anorm" % "2.4.0" % Optional
+    )
+  )
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
+
+lazy val input25 = projectMatrix
+  .in(file("play-v2.4.x-to-v2.5.x/input"))
+  .dependsOn(adapters26)
+  .settings(publish / skip := true)
+  .settings(
+    libraryDependencies ++= List(
+      "com.typesafe.play" %% "play" % play24,
+      "com.typesafe.play" %% "play-cache" % play24,
+      "com.typesafe.play" %% "play-jdbc" % play24,
+      "com.typesafe.play" %% "play-ws" % play24,
+      "com.typesafe.play" %% "anorm" % "2.4.0"
+    )
+  )
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
+
+lazy val output25 = projectMatrix
+  .in(file("play-v2.4.x-to-v2.5.x/output"))
+  .settings(publish / skip := true)
+  .settings(
+    libraryDependencies ++= List(
+      "com.typesafe.play" %% "play" % play25,
+      "com.typesafe.play" %% "play-cache" % play25,
+      "com.typesafe.play" %% "play-jdbc" % play25,
+      "com.typesafe.play" %% "play-ws" % play25,
+      "com.typesafe.play" %% "anorm" % "2.5.3"
+    )
+  )
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
+
+lazy val tests25 = projectMatrix
+  .in(file("play-v2.4.x-to-v2.5.x/tests"))
+  .settings(
+    publish / skip := true,
+    libraryDependencies ++= List(
+      "ch.epfl.scala" % "scalafix-testkit" % V.scalafixVersion % Test cross CrossVersion.full
+    ),
+    scalafixTestkitOutputSourceDirectories :=
+      TargetAxis.resolve(output25, Compile / unmanagedSourceDirectories).value,
+    scalafixTestkitInputSourceDirectories :=
+      TargetAxis.resolve(input25, Compile / unmanagedSourceDirectories).value,
+    scalafixTestkitInputClasspath :=
+      TargetAxis.resolve(input25, Compile / fullClasspath).value,
+    scalafixTestkitInputScalacOptions :=
+      TargetAxis.resolve(input25, Compile / scalacOptions).value,
+    scalafixTestkitInputScalaVersion :=
+      TargetAxis.resolve(input25, Compile / scalaVersion).value
+  )
+  .dependsOn(rules25)
+  .enablePlugins(ScalafixTestkitPlugin)
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
 
 // migrations from v2.5.x to v2.6.x
 
@@ -117,8 +198,22 @@ lazy val rules26 = projectMatrix
   .defaultAxes(VirtualAxis.jvm)
   .jvmPlatform(rulesCrossVersions)
 
+lazy val adapters26 = projectMatrix
+  .in(file("play-v2.5.x-to-v2.6.x/adapters"))
+  .settings(
+    moduleName := "play-migrations-v25-to-v26-adapters",
+    libraryDependencies ++= List(
+      "com.typesafe.play" %% "play" % play25 % Optional,
+      "com.typesafe.play" %% "play-cache" % play25 % Optional,
+      "com.typesafe.play" %% "play-ws" % play25 % Optional
+    )
+  )
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
+
 lazy val input26 = projectMatrix
   .in(file("play-v2.5.x-to-v2.6.x/input"))
+  .dependsOn(adapters26)
   .settings(publish / skip := true)
   .settings(
     libraryDependencies ++= List(
@@ -163,6 +258,8 @@ lazy val tests26 = projectMatrix
   )
   .dependsOn(rules26)
   .enablePlugins(ScalafixTestkitPlugin)
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala211))
 
 // migrations from v2.6.x to v2.7.x
 
@@ -234,3 +331,5 @@ lazy val tests27 = projectMatrix
   )
   .dependsOn(rules27)
   .enablePlugins(ScalafixTestkitPlugin)
+  .defaultAxes(VirtualAxis.jvm)
+  .jvmPlatform(List(V.scala212))

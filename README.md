@@ -1,7 +1,9 @@
 # play-migrations-scalafix-rules
 
-While these rules won't cover the entire migration process, they should help in the process.
-Some rules are complex (e.g. MigrateControllers) and will likely not cover all use cases or 
+While these rules won't cover the entire migration process, they should at least help automate
+the most tedious tasks.
+
+Some rules are complex (e.g. MigrateControllers) and will likely not cover all use cases or
 generate code that may not compile. If that's the case you will need to finish the migration
 manually.
 
@@ -10,8 +12,14 @@ manually.
 Start by installing the sbt plugin in `project/plugins.sbt`
 
 ```scala
-// project/plugins.sbt
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.19")
+// project/plugins.sbt (for sbt 0.13.x)
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.29") // final sbt 0.13.x version
+dependencyOverrides += "ch.epfl.scala" % "scalafix-interfaces" % "0.10.3"
+```
+
+```scala
+// project/plugins.sbt (for sbt 1.x)
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.10.3")
 ```
 
 ... then add custom rules
@@ -34,16 +42,17 @@ $ sbt
 
 ### Advanced Usage
 
-When you have multiple projects that need migration, it is easier to enable the plugin globally 
+When you have multiple projects that need migration, it is easier to enable the plugin globally
 in `~/.sbt/0.13/` instead of editing each project.
 
 ```scala
 // ~/.sbt/0.13/plugins/plugins.sbt
-addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.19")
+addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.9.29")
 ```
 
 ```scala
 // ~/.sbt/0.13/plugins/PlayFixPlugin.scala
+
 import sbt._
 import Keys._
 import scalafix.sbt.ScalafixPlugin
@@ -52,6 +61,7 @@ import scalafix.sbt.ScalafixPlugin.autoImport._
 object PlayFixPlugin extends AutoPlugin {
   override def trigger: PluginTrigger = allRequirements
   override def requires: Plugins = ScalafixPlugin
+
   override def buildSettings: Seq[Setting[_]] =
     List(
       scalafixDependencies ++= List(
@@ -62,6 +72,7 @@ object PlayFixPlugin extends AutoPlugin {
       ),
       scalafixConfig := Some(file("~/shared/scalafix.conf")) // see examples
     )
+
   override def projectSettings: Seq[Setting[_]] =
     List(
       libraryDependencies ++= List(
@@ -69,6 +80,7 @@ object PlayFixPlugin extends AutoPlugin {
       )
     )
 }
+
 ```
 
 ... then run the rules in any sbt 0.13.x project
