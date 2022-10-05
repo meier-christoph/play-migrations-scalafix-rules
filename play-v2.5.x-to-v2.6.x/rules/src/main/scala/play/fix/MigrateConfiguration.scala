@@ -31,6 +31,21 @@ final class MigrateConfiguration() extends SemanticRule("MigrateConfiguration") 
                 )
               ) =>
             Some((field, method, key, asScala))
+          case Term.Apply(
+                Term.Select(
+                  Config(Term.Apply(Term.Select(field, Term.Name(method)), List(key))),
+                  Term.Name("map")
+                ),
+                List(
+                  Term.AnonymousFunction(
+                    Term.Apply(
+                      Term.Select(Term.Placeholder(), Term.Name("map")),
+                      List(Term.AnonymousFunction(Term.Apply(Term.Select(Term.Placeholder(), Term.Name(asScala)), List())))
+                    )
+                  )
+                )
+              ) =>
+            Some((field, method, key, asScala))
           case _ => None
         }
     }
