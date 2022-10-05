@@ -10,6 +10,8 @@ inThisBuild(
     scalacOptions ++= List("-Yrangepos"),
     versionScheme := Some("semver-spec"),
     updateOptions := updateOptions.value.withLatestSnapshots(false),
+    resolvers += Resolver.typesafeRepo("releases"),
+    resolvers += Resolver.typesafeIvyRepo("releases"),
     credentials ++= (for {
       usr <- sys.env.get("GITHUB_ACTOR")
       pwd <- sys.env.get("GITHUB_TOKEN")
