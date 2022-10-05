@@ -9,7 +9,12 @@ inThisBuild(
     semanticdbVersion := scalafixSemanticdb.revision,
     scalacOptions ++= List("-Yrangepos"),
     versionScheme := Some("semver-spec"),
-    updateOptions := updateOptions.value.withLatestSnapshots(false)
+    updateOptions := updateOptions.value.withLatestSnapshots(false),
+    credentials ++= (for {
+      usr <- sys.env.get("GITHUB_ACTOR")
+      pwd <- sys.env.get("GITHUB_TOKEN")
+    } yield Credentials("GitHub Package Registry", "maven.pkg.github.com", usr, pwd)).toList,
+    publishTo := Some("github" at "https://maven.pkg.github.com/meier-christoph/play-migrations-scalafix-rules")
   )
 )
 
