@@ -1,15 +1,9 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      strategy:
-        type: choice
-        description: "Chose strategy"
-        required: true
-        default: 'Release'
-        options:
-          - Release
+  push:
+    tags:
+      - v*
 
 permissions:
   contents: read
