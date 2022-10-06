@@ -1,0 +1,32 @@
+name: Debug
+
+on:
+  workflow_dispatch:
+    inputs:
+      strategy:
+        type: choice
+        description: "Chose"
+        required: true
+        default: 'Run'
+        options:
+          - Run
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'zulu'
+          cache: 'sbt'
+
+      - name: Run release
+        run: env
