@@ -9,6 +9,7 @@ inThisBuild(
     semanticdbVersion := scalafixSemanticdb.revision,
     scalacOptions ++= List("-Yrangepos"),
     versionScheme := Some("semver-spec"),
+    dynverSeparator := "-",
     updateOptions := updateOptions.value.withLatestSnapshots(false),
     resolvers += Resolver.typesafeRepo("releases"),
     resolvers += Resolver.typesafeIvyRepo("releases"),
@@ -25,7 +26,7 @@ lazy val play24 = "2.4.11"
 lazy val play25 = "2.5.19"
 lazy val play26 = "2.6.25"
 lazy val play27 = "2.7.9"
-lazy val play28 = "2.8.16"
+lazy val play28 = "2.8.19"
 
 lazy val core = projectMatrix
   .settings(
